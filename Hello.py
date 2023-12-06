@@ -6,7 +6,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
-key = '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'
+key = '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'
 
 client = OpenAI( api_key=key)
 
