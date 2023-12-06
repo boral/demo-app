@@ -10,9 +10,7 @@ import os
 
 load_dotenv()
 
-key = os.getenv('API_KEY')
-
-client = OpenAI( api_key=key)
+client = OpenAI( api_key= 'sk-' + os.getenv('abc'))
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
