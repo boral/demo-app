@@ -2,3 +2,4 @@ streamlit
 PyMuPDF
 openai
 reportlab
+python-dotenv
