@@ -5,10 +5,12 @@ import base64
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
+from dotenv import load_dotenv
+import os
 
-key = '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'
+load_dotenv()
 
-client = OpenAI( api_key=key)
+client = OpenAI( api_key= 'sk-' + os.getenv('abc'))
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
