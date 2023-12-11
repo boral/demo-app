@@ -21,7 +21,7 @@ client = OpenAI( api_key= 'sk-' + os.getenv('abc'))
 
 # Function to check login credentials
 def login(username, password):
-    return username == "a" and password == "b"
+    return username == "smartscan" and password == "smartscan"
 
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
