@@ -19,6 +19,10 @@ load_dotenv()
 
 client = OpenAI( api_key= 'sk-' + os.getenv('abc'))
 
+# Function to check login credentials
+def login(username, password):
+    return username == "a" and password == "b"
+
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
@@ -109,40 +113,62 @@ def create_pdf(input_text, bottom_text):
 
 
 def main():
-    st.title("Radiologist")
-
-    # Upload image
-    uploaded_image = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    st.title("SmartScanAI")
     
-    if uploaded_image is not None:
-        # Display the uploaded image
-        st.image(uploaded_image, caption="Uploaded Image", use_column_width=True)
+    # Get session state
+    if "login_successful" not in st.session_state:
+        st.session_state.login_successful = False
+    if "username" not in st.session_state:
+        st.session_state.username = ""
+    if "password" not in st.session_state:
+        st.session_state.password = ""
         
-        with open('uploaded_image.jpg', "wb") as f:
-            f.write(uploaded_image.read())
+    # If login is successful, display "Hello"
+    if st.session_state.login_successful:
+        # Upload image
+        uploaded_image = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
         
-        report_text = radiologist_report( 'uploaded_image.jpg' )
-        
-        condition_met_flag = False
-        
-        words_to_look_for = ['Findings:', 'Impressions:', 'Recommendations:', 'Findings*', 'Impressions*', 'Recommendations*' ]
-        
-        for iternation_num in range(5):
-            if any(word in report_text for word in words_to_look_for):
-                condition_met_flag = True
-                print("Condition met in iteration : ", str( iternation_num ) )
-                break
-            time.sleep(5)
+        if uploaded_image is not None:
+            # Display the uploaded image
+            st.image(uploaded_image, caption="Uploaded Image", use_column_width=True)
+            
+            with open('uploaded_image.jpg', "wb") as f:
+                f.write(uploaded_image.read())
+            
             report_text = radiologist_report( 'uploaded_image.jpg' )
-        
-        #... If even after retries, output is not obtained ...
-        if not condition_met_flag:
-            report_text = "Sorry ! Not able to process this image. Please try with some other image with better clarity."
-        
-        create_pdf( report_text, iternation_num )   #>.. report
+            
+            condition_met_flag = False
+            
+            words_to_look_for = ['Findings:', 'Impressions:', 'Recommendations:', 'Findings*', 'Impressions*', 'Recommendations*' ]
+            
+            for iternation_num in range(5):
+                if any(word in report_text for word in words_to_look_for):
+                    condition_met_flag = True
+                    print("Condition met in iteration : ", str( iternation_num ) )
+                    break
+                time.sleep(5)
+                report_text = radiologist_report( 'uploaded_image.jpg' )
+            
+            #... If even after retries, output is not obtained ...
+            if not condition_met_flag:
+                report_text = "Sorry ! Not able to process this image. Please try with some other image with better clarity."
+            
+            create_pdf( report_text, iternation_num )   #>.. report
 
-        # Display report
-        display_pdf('radiologist_report.pdf')
+            # Display report
+            display_pdf('radiologist_report.pdf')
+    else:
+        # Display login form
+        st.session_state.username = st.text_input("Username:", value=st.session_state.username)
+        st.session_state.password = st.text_input("Password:", type="password", value=st.session_state.password)
+
+        # Check login credentials
+        if st.button("Login"):
+            if login(st.session_state.username, st.session_state.password):
+                # Update session state on successful login
+                st.session_state.login_successful = True
+            else:
+                st.warning("Wrong username or password.")
 
 
 def display_pdf(pdf_path):
