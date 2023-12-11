@@ -3,11 +3,15 @@ import fitz  # PyMuPDF
 from openai import OpenAI
 import base64
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib import styles
 from dotenv import load_dotenv
 import os
 import time
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
 
 #os.chdir(r'E:\projects\diagnostic')
 
@@ -72,7 +76,10 @@ def radiologist_report( input_image_path ):
         
     return final_text
 
-def create_pdf( input_text):
+def create_pdf(input_text, bottom_text):
+    # Convert iternation_num to a string if it is an integer
+    bottom_text = str(bottom_text)
+
     # Create a PDF document
     doc = SimpleDocTemplate("radiologist_report.pdf", pagesize=letter)
 
@@ -88,6 +95,14 @@ def create_pdf( input_text):
     normal_style = getSampleStyleSheet()["Normal"]
     input_paragraph = Paragraph(input_text.replace('\\n', '<br/>'), normal_style)
     flowables.append(input_paragraph)
+
+    # Add space between the main content and the bottom text
+    flowables.append(Spacer(1, 20))
+
+    # Add the supplied text message to the lower bottom
+    bottom_style = getSampleStyleSheet()["Normal"]
+    bottom_paragraph = Paragraph(bottom_text.replace('\\n', '<br/>'), bottom_style)
+    flowables.append(bottom_paragraph)
 
     # Build the PDF document
     doc.build(flowables)
@@ -115,7 +130,7 @@ def main():
         for iternation_num in range(5):
             if any(word in report_text for word in words_to_look_for):
                 condition_met_flag = True
-                print("Condition met in iteration : ", iternation_num )
+                print("Condition met in iteration : ", str( iternation_num ) )
                 break
             time.sleep(5)
             report_text = radiologist_report( 'uploaded_image.jpg' )
@@ -124,7 +139,7 @@ def main():
         if not condition_met_flag:
             report_text = "Sorry ! Not able to process this image. Please try with some other image with better clarity."
         
-        create_pdf( report_text )   #>.. report
+        create_pdf( report_text, iternation_num )   #>.. report
 
         # Display report
         display_pdf('radiologist_report.pdf')
