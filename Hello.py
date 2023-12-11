@@ -7,6 +7,9 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from dotenv import load_dotenv
 import os
+import time
+
+#os.chdir(r'E:\projects\diagnostic')
 
 load_dotenv()
 
@@ -103,7 +106,25 @@ def main():
         with open('uploaded_image.jpg', "wb") as f:
             f.write(uploaded_image.read())
         
-        create_pdf( radiologist_report( 'uploaded_image.jpg' ) )   #>.. report
+        report_text = radiologist_report( 'uploaded_image.jpg' )
+        
+        condition_met_flag = False
+        
+        words_to_look_for = ['Findings:', 'Impressions:', 'Recommendations:', 'Findings*', 'Impressions*', 'Recommendations*' ]
+        
+        for iternation_num in range(5):
+            if any(word in report_text for word in words_to_look_for):
+                condition_met_flag = True
+                print("Condition met in iteration : ", iternation_num )
+                break
+            time.sleep(5)
+            report_text = radiologist_report( 'uploaded_image.jpg' )
+        
+        #... If even after retries, output is not obtained ...
+        if not condition_met_flag:
+            report_text = "Sorry ! Not able to process this image. Please try with some other image with better clarity."
+        
+        create_pdf( report_text )   #>.. report
 
         # Display report
         display_pdf('radiologist_report.pdf')
